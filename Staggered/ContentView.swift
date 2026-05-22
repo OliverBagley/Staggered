@@ -62,7 +62,7 @@ struct TitleBar: View {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.secondary)
 
-            Text("Startup Delayer")
+            Text("Staggered")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -317,7 +317,7 @@ struct DelayControl: View {
     var body: some View {
         HStack(spacing: 0) {
             StepButton(icon: "minus") {
-                seconds = max(0, seconds - 5)
+                seconds = max(0, seconds - 1)
                 editText = "\(seconds)"
                 onChange()
             }
@@ -342,7 +342,7 @@ struct DelayControl: View {
             .onTapGesture { if !isEditing { beginEdit() } }
 
             StepButton(icon: "plus") {
-                seconds = min(3600, seconds + 5)
+                seconds = min(3600, seconds + 1)
                 editText = "\(seconds)"
                 onChange()
             }
@@ -423,8 +423,8 @@ struct LoginItemRow: View {
 
     var statusText: String {
         vm.loginItemEnabled
-            ? "Active — launches delayed apps on login"
-            : "Not registered as a Login Item"
+            ? "Registered — will run delayed launches on login"
+            : "Not registered — apps will not be delayed at login"
     }
 
     var body: some View {

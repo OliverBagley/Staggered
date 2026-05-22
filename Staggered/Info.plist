@@ -3,15 +3,17 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Startup Delayer</string>
+    <string>Staggered</string>
     <key>CFBundleIdentifier</key>
-    <string>com.oliverbagley.startupdelayer</string>
+    <string>com.oliverbagley.staggered</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0</string>
     <key>CFBundleExecutable</key>
-    <string>StartupDelayer</string>
+    <string>Staggered</string>
+    <key>CFBundleIconFile</key>
+    <string>Staggered</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>NSPrincipalClass</key>
@@ -20,8 +22,5 @@
     <true/>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
-    <!-- Arguments passed when launched as a Login Item via SMAppService -->
-    <key>LSEnvironment</key>
-    <dict/>
 </dict>
 </plist>

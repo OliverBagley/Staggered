@@ -2,19 +2,18 @@ import SwiftUI
 import AppKit
 
 @main
-struct StartupDelayerApp: App {
+struct StaggeredApp: App {
     init() {
         if CommandLine.arguments.contains("--login") {
-            // Launched at login — run silently, no UI, no dock icon
-            NSApp.setActivationPolicy(.prohibited)
-            LaunchRunner.run()
-            exit(0)
+            DispatchQueue.main.async {
+                NSApp.setActivationPolicy(.prohibited)
+            }
         }
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .frame(minWidth: 540, minHeight: 500)
         }
         .windowStyle(.hiddenTitleBar)

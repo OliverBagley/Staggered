@@ -2,67 +2,69 @@
 set -e
 
 # -----------------------------------------------
-# Startup Delayer – build.sh
-# Builds the app bundle using swiftc (no Xcode project needed)
-# Requirements: Xcode Command Line Tools (xcode-select --install)
+# Staggered – build.sh
+# Builds the .app bundle using swiftc directly.
+# Requirements: Xcode Command Line Tools
+#   xcode-select --install
 #
-# IMPORTANT: The app must live in /Applications for SMAppService
-# (Login Item registration) to work. After building, run:
-#   cp -r "build/Startup Delayer.app" /Applications/
+# The app can live anywhere — it writes its own
+# LaunchAgent plist to ~/Library/LaunchAgents/
+# when you toggle "Run at Login" in the GUI.
 # -----------------------------------------------
 
-APP_NAME="Startup Delayer"
-BINARY_NAME="StartupDelayer"
+APP_NAME="Staggered"
+BINARY_NAME="Staggered"
+ICON_FILE="Staggered.icns"
 BUILD_DIR="./build"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 CONTENTS="$APP_BUNDLE/Contents"
 MACOS_DIR="$CONTENTS/MacOS"
 RESOURCES_DIR="$CONTENTS/Resources"
-SRC_DIR="./StartupDelayer"
+SRC_DIR="./Staggered"
+ICONSET="$SRC_DIR/AppIcon.iconset"
 
 echo "🔨  Building $APP_NAME..."
 
-# Clean previous build
 rm -rf "$APP_BUNDLE"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 
-# Gather Swift sources
+if [ -d "$ICONSET" ]; then
+    if command -v iconutil >/dev/null 2>&1; then
+        iconutil -c icns "$ICONSET" -o "$RESOURCES_DIR/$ICON_FILE"
+        echo "📦  Built app icon: $ICON_FILE"
+    else
+        echo "⚠️  iconutil is not available on this system; the icon will not be built."
+    fi
+fi
+
 SOURCES=$(find "$SRC_DIR" -name "*.swift" | tr '\n' ' ')
 
-# Detect architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "arm64" ]; then
     TARGET="arm64-apple-macos13.0"
 else
     TARGET="x86_64-apple-macos13.0"
 fi
-
 SDK=$(xcrun --show-sdk-path)
 
-# Compile
 swiftc $SOURCES \
     -o "$MACOS_DIR/$BINARY_NAME" \
     -framework SwiftUI \
     -framework AppKit \
     -framework Foundation \
-    -framework ServiceManagement \
     -framework UniformTypeIdentifiers \
     -sdk "$SDK" \
     -target "$TARGET" \
-    -Onone \
-    -module-name StartupDelayer
+    -module-name Staggered
 
-# Copy Info.plist
 cp "$SRC_DIR/Info.plist" "$CONTENTS/Info.plist"
 
 echo ""
 echo "✅  Done: $APP_BUNDLE"
 echo ""
-echo "   Next steps:"
-echo "   1. Copy to /Applications (required for Login Item registration):"
-echo "      cp -r \"$APP_BUNDLE\" /Applications/"
+echo "   Move the app somewhere permanent before enabling login item,"
+echo "   e.g. ~/Applications/ or /Applications/ — the LaunchAgent plist"
+echo "   stores the absolute executable path, so don't move it afterwards."
 echo ""
-echo "   2. Open the app and toggle 'Run at Login'"
-echo ""
-echo "   That's it. The app registers itself — no separate launcher needed."
+echo "   open \"$APP_BUNDLE\""
 echo ""
