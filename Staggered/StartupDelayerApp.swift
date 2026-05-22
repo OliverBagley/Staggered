@@ -10,28 +10,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-@main
 struct StaggeredApp: App {
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
 
     init() {
         let isLogin = CommandLine.arguments.contains("--login")
-
-        // When launched as a login item we must not appear in the Dock.
-        if isLogin {
-            NSApplication.shared.setActivationPolicy(.prohibited)
-            // Don't keep the app alive when windows close for login runs
-            appDelegate.terminateAfterLastWindowClosed = false
-        } else {
-            // For normal (user) launches, quit when last window closes
-            appDelegate.terminateAfterLastWindowClosed = true
-        }
+        appDelegate.terminateAfterLastWindowClosed = !isLogin
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .frame(minWidth: 540, minHeight: 500)
+            if CommandLine.arguments.contains("--login") {
+                LauncherRunnerView()
+                    .frame(width: 1, height: 1)
+            } else {
+                ContentView()
+                    .frame(minWidth: 540, minHeight: 500)
+            }
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
