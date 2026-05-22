@@ -4,10 +4,9 @@ import AppKit
 /// Runs at login. Reads saved config and launches each app with its delay.
 enum LaunchRunner {
     static func run() {
-        // Use the explicit suite name matching the bundle ID to guarantee
-        // we read from the same UserDefaults domain the GUI wrote.
-        let defaults = UserDefaults(suiteName: "com.oliverbagley.staggered")
-                    ?? UserDefaults.standard
+        // Use the standard UserDefaults for the app's preferences so we
+        // read the same domain macOS writes to (avoid nonsensical suite names).
+        let defaults = UserDefaults.standard
 
         let isParallel = defaults.bool(forKey: "launchModeIsParallel")
 
@@ -27,11 +26,12 @@ enum LaunchRunner {
                 return
             }
             let config = NSWorkspace.OpenConfiguration()
-            config.activates = true
+            // Don't activate apps when launching at login — keep launches silent
+            config.activates = false
             // Use a semaphore so we know the open call was dispatched
             // before we sleep/move to the next one
             let sem = DispatchSemaphore(value: 0)
-            workspace.openApplication(at: url, configuration: config) { _, error in
+                workspace.openApplication(at: url, configuration: config) { _, error in
                 if let error = error {
                     NSLog("[staggered] Failed to open %@: %@", app.name, error.localizedDescription)
                 }
@@ -52,14 +52,11 @@ enum LaunchRunner {
             group.wait()
 
         } else {
-            // Sequence: sort ascending, sleep the delta between each
-            let sorted = apps.sorted { $0.delaySeconds < $1.delaySeconds }
-            var previous = 0
-            for app in sorted {
-                let interval = app.delaySeconds - previous
-                previous = app.delaySeconds
-                if interval > 0 {
-                    Thread.sleep(forTimeInterval: TimeInterval(interval))
+            // Sequence: treat each app's `delaySeconds` as the delay after
+            // the previous app (cumulative). Iterate in the saved order.
+            for app in apps {
+                if app.delaySeconds > 0 {
+                    Thread.sleep(forTimeInterval: TimeInterval(app.delaySeconds))
                 }
                 open(app)
             }

@@ -11,8 +11,7 @@ class AppListViewModel: ObservableObject {
     private let modeKey = "launchModeIsParallel"
     private let plistLabel = "com.oliverbagley.staggered.launcher"
 
-    private let defaults = UserDefaults(suiteName: "com.oliverbagley.staggered")
-                        ?? UserDefaults.standard
+    private let defaults = UserDefaults.standard
 
     // Path to the LaunchAgent plist we manage in the user's Library
     private var launchAgentPlistURL: URL {
@@ -121,8 +120,9 @@ class AppListViewModel: ObservableObject {
             return
         }
 
-        // Load it into launchd immediately so it's active without a reboot
-        runLaunchctl("load", launchAgentPlistURL.path)
+        // Do not load the LaunchAgent immediately — creating the plist is sufficient
+        // The LaunchAgent will run on the next login. Avoid triggering launches when
+        // the user merely enables the preference in the UI.
         loginItemEnabled = true
     }
 
